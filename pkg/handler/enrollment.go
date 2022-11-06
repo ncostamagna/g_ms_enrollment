@@ -88,7 +88,7 @@ func decodeUpdateEnrollment(_ context.Context, r *http.Request) (interface{}, er
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, resp interface{}) error {
 	r := resp.(response.Response)
-
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(r.StatusCode())
 	return json.NewEncoder(w).Encode(resp)
 }
