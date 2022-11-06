@@ -12,6 +12,9 @@ import (
 	"github.com/ncostamagna/g_ms_enrollment_ex/internal/enrollment"
 	"github.com/ncostamagna/g_ms_enrollment_ex/pkg/bootstrap"
 	"github.com/ncostamagna/g_ms_enrollment_ex/pkg/handler"
+
+	courseSdk "github.com/ncostamagna/g_sdk_ex/course"
+	userSdk "github.com/ncostamagna/g_sdk_ex/user"
 )
 
 func main() {
@@ -24,8 +27,12 @@ func main() {
 	}
 
 	ctx := context.Background()
+
+	courseTrans := courseSdk.NewHttpClient(os.Getenv("API_COURSE_URL"), "")
+	userTrans := userSdk.NewHttpClient(os.Getenv("API_USER_URL"), "")
+
 	enrollRepo := enrollment.NewRepo(db, l)
-	enrollSrv := enrollment.NewService(l, enrollRepo)
+	enrollSrv := enrollment.NewService(l, userTrans, courseTrans, enrollRepo)
 	h := handler.NewEnrollmentHTTPServer(ctx, enrollment.MakeEndpoints(enrollSrv))
 	port := os.Getenv("PORT")
 	address := fmt.Sprintf("127.0.0.1:%s", port)

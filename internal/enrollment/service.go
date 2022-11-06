@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/ncostamagna/g_ms_domain_ex/domain"
+	courseSdk "github.com/ncostamagna/g_sdk_ex/course"
+	userSdk "github.com/ncostamagna/g_sdk_ex/user"
 )
 
 type (
@@ -21,15 +23,19 @@ type (
 	}
 
 	service struct {
-		log  *log.Logger
-		repo Repository
+		log         *log.Logger
+		userTrans   userSdk.Transport
+		courseTrans courseSdk.Transport
+		repo        Repository
 	}
 )
 
-func NewService(l *log.Logger, repo Repository) Service {
+func NewService(l *log.Logger, userTrans userSdk.Transport, courseTrans courseSdk.Transport, repo Repository) Service {
 	return &service{
-		log:  l,
-		repo: repo,
+		log:         l,
+		userTrans:   userTrans,
+		courseTrans: courseTrans,
+		repo:        repo,
 	}
 }
 
@@ -39,6 +45,14 @@ func (s service) Create(ctx context.Context, userID, courseID string) (*domain.E
 		UserID:   userID,
 		CourseID: courseID,
 		Status:   "P",
+	}
+
+	if _, err := s.userTrans.Get(userID); err != nil {
+		return nil, err
+	}
+
+	if _, err := s.courseTrans.Get(courseID); err != nil {
+		return nil, err
 	}
 
 	if err := s.repo.Create(ctx, enroll); err != nil {

@@ -6,6 +6,9 @@ import (
 
 	"github.com/ncostamagna/g_ms_client/meta"
 	"github.com/ncostamagna/g_ms_enrollment_ex/pkg/response"
+
+	courseSdk "github.com/ncostamagna/g_sdk_ex/course"
+	userSdk "github.com/ncostamagna/g_sdk_ex/user"
 )
 
 //Endpoints struct
@@ -66,6 +69,11 @@ func makeCreateEndpoint(s Service) Controller {
 
 		enroll, err := s.Create(ctx, req.UserID, req.CourseID)
 		if err != nil {
+
+			if errors.As(err, &userSdk.ErrNotFound{}) ||
+				errors.As(err, &courseSdk.ErrNotFound{}) {
+				return nil, response.NotFound(err.Error())
+			}
 
 			return nil, response.InternalServerError(err.Error())
 		}
